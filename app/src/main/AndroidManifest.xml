@@ -9,13 +9,14 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label ="MyAudioBookPlayer"
+        android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme = "@style/Theme.MyAudioBookPlayer">
+        android:theme="@style/Theme.AudioBookPlayer" >
+
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.myaudiobookplayer.MainActivity"
             android:launchMode="singleTop"
             android:exported="true" >
             <intent-filter>
