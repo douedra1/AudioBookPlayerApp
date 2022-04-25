@@ -1,7 +1,6 @@
 package com.example.myaudiobookplayer
 
 
-
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,10 +12,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.example.myaudiobookplayer.database.entity.Book
 
 class ControlFragment  : Fragment() {
 
-    private var book:Book? = null;
+    private var book: Book? = null;
     private lateinit var tvBookTitle:TextView;
     private lateinit var tvStatus:TextView;
     private lateinit var stopPlaying:ImageButton;
@@ -24,11 +24,10 @@ class ControlFragment  : Fragment() {
     private lateinit var btnPause:ImageButton;
     private lateinit var seekBar:SeekBar;
     private val viewModel: AppViewModel by activityViewModels()
+    var progressChangedValue = 0
 
-    //2
     companion object {
-
-        fun newInstance(book:Book): ControlFragment {
+        fun newInstance(book: Book): ControlFragment {
             val fragmentDetails = ControlFragment();
             fragmentDetails.book = book
             return fragmentDetails;
@@ -38,7 +37,6 @@ class ControlFragment  : Fragment() {
             return fragmentDetails;
         }
     }
-    //3
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -81,9 +79,10 @@ class ControlFragment  : Fragment() {
 
     private fun seekBarListener(){
         seekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
-            var progressChangedValue = 0
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 progressChangedValue = progress
+
+
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -104,6 +103,8 @@ class ControlFragment  : Fragment() {
     private fun setSeek(progressChangedValue: Int){
         var seek = ((progressChangedValue)*(book!!.duration)) / 100
         viewModel.setSeekBar(seek)
+        book!!.currentPosition = seek
+        viewModel.updateBook(book!!)
     }
 
 
@@ -113,6 +114,8 @@ class ControlFragment  : Fragment() {
             if(book != null){
                 tvStatus.visibility = View.GONE
                 viewModel.stopPlayBook(book!!)
+                book!!.currentPosition = 0
+                viewModel.updateBook(book!!)
             }else{
                 showMessage("No book selected")
             }
@@ -128,6 +131,7 @@ class ControlFragment  : Fragment() {
             if(book != null) {
                 tvStatus.visibility = View.GONE
                 viewModel.pausePlayBook(book!!)
+                setSeek(progressChangedValue)
             }else{
                 showMessage("No book selected")
 

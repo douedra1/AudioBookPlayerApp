@@ -1,14 +1,19 @@
 package com.example.myaudiobookplayer
 
-
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.myaudiobookplayer.database.entity.Book
+import com.example.myaudiobookplayer.database.repository.BookRepository
 import com.example.myaudiobookplayer.network.ApiClient
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-class AppViewModel: ViewModel() {
+
+class AppViewModel(application: Application,val bookRepository : BookRepository) : AndroidViewModel(application) {
+
 
     private val mutableSelectedBook = MutableLiveData<Book>()
     val selectedBook: LiveData<Book> get() = mutableSelectedBook
@@ -63,7 +68,6 @@ class AppViewModel: ViewModel() {
     }
 
 
-
     fun searchBook(term: String?) {
         val loginResponseCall: Call<List<Book>> =
             ApiClient.service.searchBooks(term)
@@ -71,7 +75,7 @@ class AppViewModel: ViewModel() {
             override fun onResponse(call: Call<List<Book>>, response: Response<List<Book>>) {
                 if(response.isSuccessful){
                     if(response.body()!!.isNotEmpty()) {
-                        mutableSearchedBooks.postValue(response.body())
+                        insertBookToDatabase(response.body()!!)
                     }else{
                         bookResponseMessage.postValue("No book found")
                     }
@@ -86,6 +90,21 @@ class AppViewModel: ViewModel() {
         })
     }
 
+    fun insertBookToDatabase(bookList: List<Book>){
+        bookRepository.insertBooks(bookList)
+    }
 
+    fun getGetAllBooks(): LiveData<List<Book>>? {
+        return bookRepository.getAllBooks()
+    }
+
+
+    fun updateBook(book: Book){
+        bookRepository.updateBook(book)
+    }
+
+    fun downloadBook(book: Book){
+        bookRepository.downloadBookAudio(book)
+    }
 
 }

@@ -1,7 +1,6 @@
 package com.example.myaudiobookplayer.network;
 
-
-import com.example.myaudiobookplayer.Book;
+import com.example.myaudiobookplayer.database.entity.Book;
 
 import java.util.List;
 

@@ -5,8 +5,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.myaudiobookplayer.database.entity.Book
 
-class BookListAdapter (var clickedItem: ClickedItem) : RecyclerView.Adapter<BookListAdapter.BookListAdapterVh>(){
+class BookListAdapter(var clickedItem: ClickedItem) : RecyclerView.Adapter<BookListAdapter.BookListAdapterVh>(){
 
     private var bookList = ArrayList<Book>();
 

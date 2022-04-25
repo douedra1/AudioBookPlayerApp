@@ -6,10 +6,7 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.res.Configuration
-import android.os.Bundle
-import android.os.Handler
-import android.os.IBinder
-import android.os.Message
+import android.os.*
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -19,7 +16,13 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import com.example.myaudiobookplayer.database.entity.Book
+import com.example.myaudiobookplayer.database.repository.BookRepository
 import edu.temple.audlibplayer.PlayerService
+import java.io.File
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var fm: FragmentManager;
@@ -27,7 +30,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar;
     private lateinit var bookList: BookList;
     private lateinit var book: Book;
-    private val viewModel: AppViewModel by viewModels()
+    private lateinit var viewModel: AppViewModel;
 
     private  var playerService: PlayerService.MediaControlBinder? = null
     var serviceBound = false
@@ -41,6 +44,11 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun initDate(){
+
+
+        viewModel =  ViewModelProviders.of(this, AppViewModelFactory(this.application))
+            .get(AppViewModel::class.java)
+
 
         btnSearch = findViewById(R.id.btnSearch)
         progressBar = findViewById(R.id.progress_bar)
@@ -67,7 +75,6 @@ class MainActivity : AppCompatActivity() {
 
         handleViewModel();
 
-
     }
 
     private fun handleViewModel(){
@@ -92,11 +99,24 @@ class MainActivity : AppCompatActivity() {
             setBookCollections(it)
         }
 
+        viewModel.getGetAllBooks()!!.observe(this){
+            handleProgressBar(false)
+            setBookCollections(it)
+        }
+
 
         viewModel.startPlay.observe(this){
             if(it != null && playerService!= null ) {
                 progressBar.visibility = View.VISIBLE
-                playerService!!.play(it.id)
+                if (book.localPath != null && book.localPath != ""){
+                    Log.e(" local ", " ==> "+book.localPath)
+                    Log.e(" currentPosition ", " ==> "+book.currentPosition)
+                    playerService!!.play(File(
+                        Environment.getExternalStorageDirectory().toString() + "/Documents/"+book.localPath!!+".mp3"),book.currentPosition)
+                }else{
+                    Log.e(" stream ", " ==> "+book.localPath)
+                    playerService!!.play(it.id)
+                }
                 playerService!!.setProgressHandler(handler)
             }
 
@@ -113,7 +133,6 @@ class MainActivity : AppCompatActivity() {
         viewModel.pausePlay.observe(this){
             if(it != null && playerService!= null ) {
                 progressBar.visibility = View.GONE
-
                 playerService!!.pause()
             }
         }
@@ -127,6 +146,8 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+
+
 
     private var handler: Handler = object : Handler() {
         override fun handleMessage(msg: Message) {
@@ -184,7 +205,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadControlFragment(fragment: Fragment) {
-        // load fragment
         val transaction = supportFragmentManager.beginTransaction()
         transaction.replace(R.id.frag_control, fragment,"control")
         transaction.addToBackStack(null)
@@ -239,7 +259,7 @@ class MainActivity : AppCompatActivity() {
             this.bookArray.toMutableList().remove(book)
         }
 
-        fun getBook(position: Int):Book{
+        fun getBook(position: Int): Book {
             return this.bookArray.toMutableList()[position]
         }
 
@@ -291,7 +311,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
-            //Something to do
+
         }
     }
 
